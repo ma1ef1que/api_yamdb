@@ -22,10 +22,10 @@ class Category(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField("Название произведения",max_length=200)
-    year = models.IntegerField("Год выхода")
+    name = models.CharField('Название произведения',max_length=200)
+    year = models.IntegerField('Год выхода')
     rating = models.ForeignKey(Rating, on_delete=models.CASCADE, related_name='titles', verbose_name='Рейтинг')
-    description = models.TextField()
+    description = models.TextField('Описание', blank=True)
     genre = models.ManyToManyField(Genre, through='TitleGenre', related_name='titles', verbose_name='Жанр')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='titles', verbose_name='Категория')
 
