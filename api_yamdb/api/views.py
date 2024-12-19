@@ -1,6 +1,6 @@
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework import filters, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
@@ -13,9 +13,11 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
     )
+    filter_backends = (filters.DjangoFilterBackend, )
     serializer_class = TitleSerializer
     pagination_class = LimitOffsetPagination
     permission_classes = [IsAdminOrReadOnly, ]
+    filterset_fields = ('category', 'genre', 'name', 'year')
 
 
 class GenreViewSet(viewsets.ReadOnlyModelViewSet):
