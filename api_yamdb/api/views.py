@@ -5,9 +5,6 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 
-
-
-
 from reviews.models import Genre, Category, Title, Review, Comment
 from .permissions import IsAdminOrReadOnly
 from .serializers import (GenreSerializer, TitleSerializer, CategorySerializer, ReviewSerializer, CommentSerializer)
