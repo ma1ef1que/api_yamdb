@@ -60,12 +60,12 @@ class Title(models.Model):
         validators=[
             MinValueValidator(
                 0,
-                message='Неккоректное значение - год не может быть до н.э.'
+                message='Некоректное значение - год не может быть до н.э.'
             ),
             MaxValueValidator(
                 int(datetime.now().year),
                 message=(
-                'Неккоректное значение - вы указыаете еще не наступивший год'
+                'Некоректное значение - вы указыаете еще не наступивший год'
             ))
         ],
         db_index=True
