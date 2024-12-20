@@ -40,7 +40,8 @@ class Category(models.Model):
          validators=[RegexValidator(
             regex=r'^[-a-zA-Z0-9_]+$',
             message='Слаг категории содержит недопустимый символ'
-        )])
+        )]
+    )
 
     class Meta:
             verbose_name = 'Категория'
@@ -53,7 +54,7 @@ class Category(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField('Название произведения',max_length=200)
+    name = models.CharField('Название произведения',max_length=256)
     year = models.PositiveIntegerField(
         verbose_name='Год выхода',
         validators=[
@@ -63,20 +64,33 @@ class Title(models.Model):
             ),
             MaxValueValidator(
                 int(datetime.now().year),
-                message='Неккоректное значение - вы указыаете еще не наступивший год'
-            )
+                message=(
+                'Неккоректное значение - вы указыаете еще не наступивший год'
+            ))
         ],
         db_index=True
     )
     description = models.TextField('Описание', blank=True)
-    genre = models.ManyToManyField(Genre, through='GenreTitle', related_name='titles', verbose_name='Жанр')
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='titles', verbose_name='Категория')
+    genre = models.ManyToManyField(
+         Genre,
+         through='GenreTitle',
+         related_name='titles',
+         verbose_name='Жанр'
+    )
+    category = models.ForeignKey(
+         Category,
+         on_delete=models.SET_NULL,
+         null=True,
+         blank=True,
+         related_name='titles',
+         verbose_name='Категория'
+    )
 
     class Meta:
             verbose_name = 'Произведение'
             verbose_name_plural = 'Произведения'
             default_related_name = 'titles'
-            ordering = ['-name']
+            ordering = ('-year', 'name')
 
     def __str__(self):
         return self.name

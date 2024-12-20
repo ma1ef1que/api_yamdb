@@ -2,6 +2,10 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.exceptions import ValidationError
+
 
 from reviews.models import Genre, Category, Title, Review, Comment
 
@@ -10,19 +14,27 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-        fields = ('__all__')
+        exclude = ('id',)
 
 
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ('__all__')
+        exclude = ('id',)
 
 class TitleSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True)
     rating = serializers.FloatField(read_only=True)
+
+    def validate_name(self, value):
+        if len(value) > 256:
+            raise ValidationError(
+                'Название произведения не может быть длиннее 256 символов.'
+            )
+        return value
+    
     class Meta:
         model = Title
         read_only_fields = ('rating', )
@@ -36,6 +48,9 @@ class TitleSerializer(serializers.ModelSerializer):
             'category'
         )
 
+    
+    
+    
 
 class ReviewSerializer(serializers.ModelSerializer):
 

@@ -5,6 +5,9 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 
+
+
+
 from reviews.models import Genre, Category, Title, Review, Comment
 from .permissions import IsAdminOrReadOnly
 from .serializers import (GenreSerializer, TitleSerializer, CategorySerializer, ReviewSerializer, CommentSerializer)
@@ -19,8 +22,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     permission_classes = [IsAdminOrReadOnly, ]
     filterset_fields = ('category', 'genre', 'name', 'year')
-
-   
+    http_method_names = ['get', 'post', 'delete', 'patch']
 
 
 class GenreViewSet(mixins.CreateModelMixin,
