@@ -13,7 +13,7 @@ from .serializers import (
     UserSerializer,
     TokenSerializer
 )
-from .services import generate_confirmation_code, send_confirmation_code
+from .services import generate_confirmation_code, send_confirmation_email
 
 
 User = get_user_model()
@@ -63,7 +63,7 @@ class SignUpView(APIView):
             confirmation_code = generate_confirmation_code()
             user.confirmation_code = confirmation_code
             user.save()
-            send_confirmation_code(
+            send_confirmation_email(
                 user.email, confirmation_code, user.username)
             return Response(
                 {"username": user.username, "email": user.email},
