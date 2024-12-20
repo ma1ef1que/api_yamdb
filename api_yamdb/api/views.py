@@ -9,6 +9,7 @@ from reviews.models import Genre, Category, Title, Review, Comment
 from .permissions import IsAdminOrReadOnly
 from .serializers import (GenreSerializer, TitleSerializer, CategorySerializer, ReviewSerializer, CommentSerializer)
 
+ALLOWED_METHODS = ['get', 'post', 'patch', 'delete']
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -37,6 +38,7 @@ class GenreViewSet(mixins.CreateModelMixin,
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, ]
+    http_method_names = ALLOWED_METHODS
 
     def get_queryset(self):
         title = self.get_title()
@@ -54,16 +56,16 @@ class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, ]
-
-    def get_review(self):
-        return get_object_or_404(Review.objects.filter(title_id=self.kwargs['title_id']),
-                                 pk=self.kwargs['review_id'])
+    http_method_names = ALLOWED_METHODS
 
     def get_queryset(self):
         return self.get_review().comments.all()
 
     def perform_create(self, serializer):
         serializer.save(review=self.get_review(), author=self.request.user)
+
+    def get_review(self):
+        return get_object_or_404(Review, pk=self.kwargs['review_id'])
 
 
 class CategoryViewSet(mixins.CreateModelMixin,
@@ -77,4 +79,3 @@ class CategoryViewSet(mixins.CreateModelMixin,
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
-

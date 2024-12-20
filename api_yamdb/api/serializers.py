@@ -48,9 +48,6 @@ class TitleSerializer(serializers.ModelSerializer):
             'category'
         )
 
-    
-    
-    
 
 class ReviewSerializer(serializers.ModelSerializer):
 
