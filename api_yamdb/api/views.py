@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Genre, Category, Title, Review, Comment
-from .permissions import IsAdminOrReadOnly
+from .permissions import IsAdminOrReadOnly, AuthorOrReadOnly
 from .serializers import (GenreSerializer, TitleSerializer, CategorySerializer, ReviewSerializer, CommentSerializer)
 
 ALLOWED_METHODS = ['get', 'post', 'patch', 'delete']
@@ -37,7 +37,7 @@ class GenreViewSet(mixins.CreateModelMixin,
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly, ]
+    permission_classes = [IsAuthenticatedOrReadOnly, AuthorOrReadOnly]
     http_method_names = ALLOWED_METHODS
 
     def get_queryset(self):
@@ -55,7 +55,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly, ]
+    permission_classes = [IsAuthenticatedOrReadOnly, AuthorOrReadOnly]
     http_method_names = ALLOWED_METHODS
 
     def get_queryset(self):
