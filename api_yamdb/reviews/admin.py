@@ -3,7 +3,6 @@ from django.contrib import admin
 from .models import Category, Comment, Genre, GenreTitle, Review, Title
 
 
-
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
 
@@ -14,6 +13,7 @@ class CategoryAdmin(admin.ModelAdmin):
     )
     empty_value_display = 'значение отсутствует'
     list_filter = ('name',)
+
 
 @admin.register(Genre)
 class GenreAdmin(admin.ModelAdmin):
@@ -55,4 +55,3 @@ class GenreTitleAdmin(admin.ModelAdmin):
     empty_value_display = 'значение отсутствует'
     list_filter = ('genre',)
     search_fields = ('title',)
-

@@ -41,4 +41,3 @@ python3 manage.py runserver
  * Django 3.2
  * Django Rest Framework 3.12.4
  * PyJWT 2.1.0
-   
