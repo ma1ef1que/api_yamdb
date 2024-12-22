@@ -16,20 +16,21 @@ class User(AbstractUser):
     username = models.CharField(
         'Имя пользователя',
         validators=(validate_username,),
-        max_length=30,
+        max_length=150,
         blank=False,
         unique=True,
         null=False
     )
     email = models.EmailField(
         'e-mail',
+        max_length=254,
         blank=False,
         unique=True,
         null=False
     )
     role = models.CharField(
         'Права пользователя',
-        max_length=20,
+        max_length=150,
         choices=ROLE_CHOICES,
         default=USER,
         blank=True
@@ -68,7 +69,7 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == self.ADMIN
+        return self.role == self.ADMIN or self.is_staff or self.is_superuser
 
     @property
     def is_moderator(self):
