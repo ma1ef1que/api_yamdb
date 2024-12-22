@@ -1,19 +1,20 @@
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from rest_framework import status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from .permissions import IsAdmin, IsUser
+from .services import generate_confirmation_code, send_confirmation_email
+from .permissions import IsAdmin
 from .serializers import (
     SignUpSerializer,
     UserSerializer,
-    TokenSerializer
+    ConformationCodeSerializer,
 )
-from .services import generate_confirmation_code, send_confirmation_email
 
 
 User = get_user_model()
@@ -25,79 +26,72 @@ class UserViewSet(ModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdmin, ]
+    http_method_names = ['get', 'post', 'patch', 'delete']
+    permission_classes = (IsAdmin,)
     filter_backends = (filters.SearchFilter,)
+    lookup_field = 'username'
     search_fields = ('username',)
 
     @action(
         methods=['GET', 'PATCH'],
         detail=False,
         url_path='me',
-        permission_classes=([IsUser,]),
-        serializer_class=UserSerializer
+        permission_classes=(IsAuthenticated,),
     )
     def get_me(self, request):
         user = request.user
         if request.method == 'GET':
-            serializer = self.get_serializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        try:
-            serializer = self.get_serializer(
-                user, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except ValidationError as e:
-            raise e
+            return Response(
+                UserSerializer(user).data, status=status.HTTP_200_OK)
+
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(role=user.role)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class SignUpView(APIView):
     """
     Регистрация пользователя и отправка кода подтверждения.
     """
+    permission_classes = (AllowAny,)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         serializer = SignUpSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            confirmation_code = generate_confirmation_code()
-            user.confirmation_code = confirmation_code
-            user.save()
-            send_confirmation_email(
-                user.email, confirmation_code, user.username)
-            return Response(
-                {"username": user.username, "email": user.email},
-                status=status.HTTP_201_CREATED
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        username = serializer.validated_data['username']
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={'username': username}
+        )
+
+        user.confirmation_code = generate_confirmation_code(user)
+        user.save()
+        send_confirmation_email(user, email)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TokenObtainView(APIView):
     """
     Получение JWT токена с использованием username и confirmation_code.
     """
+    permission_classes = (AllowAny,)
 
-    def post(self, request, *args, **kwargs):
-        serializer = TokenSerializer(data=request.data)
+    def post(self, request):
+        serializer = ConformationCodeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
+        username = serializer.validated_data.get('username')
+        code = serializer.validated_data.get('confirmation_code')
+        user = get_object_or_404(User, username=username)
 
-        try:
-            user = User.objects.get(username=data['username'])
-        except User.DoesNotExist:
-            return Response(
-                {'username': 'Пользователь не найден!'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+        if code == user.confirmation_code:
+            token = str(RefreshToken.for_user(user).access_token)
+            user.is_active = True
+            user.save()
+            return Response({'token': token}, status=status.HTTP_200_OK)
 
-        if user.confirmation_code != data.get('confirmation_code'):
-            return Response(
-                {'confirmation_code': 'Неверный код подтверждения!'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        refresh = RefreshToken.for_user(user)
         return Response(
-            {'access': str(refresh.access_token), 'refresh': str(refresh)},
-            status=status.HTTP_200_OK
+            {'confirmation_code': 'Неверный код подтверждения!'},
+            status=status.HTTP_400_BAD_REQUEST
         )

@@ -7,8 +7,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Genre, Category, Title, Review, Comment
 from .permissions import IsAdminOrReadOnly
-from .serializers import (GenreSerializer, TitleSerializer, CategorySerializer, ReviewSerializer, CommentSerializer)
-
+from .serializers import (GenreSerializer, TitleSerializer,
+                          CategorySerializer, ReviewSerializer, CommentSerializer)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -20,13 +20,11 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly, ]
     filterset_fields = ('category', 'genre', 'name', 'year')
 
-   
-
 
 class GenreViewSet(mixins.CreateModelMixin,
-                               mixins.ListModelMixin,
-                               mixins.DestroyModelMixin,
-                               viewsets.GenericViewSet):
+                   mixins.ListModelMixin,
+                   mixins.DestroyModelMixin,
+                   viewsets.GenericViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = [IsAdminOrReadOnly, ]
@@ -71,11 +69,10 @@ class CategoryViewSet(mixins.CreateModelMixin,
                       mixins.ListModelMixin,
                       mixins.DestroyModelMixin,
                       viewsets.GenericViewSet
-):
+                      ):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrReadOnly, ]
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
-
