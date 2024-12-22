@@ -19,7 +19,8 @@ class AuthorOrReadOnly(permissions.BasePermission):
     message = "Изменение чужого контента запрещено!"
 
     def has_object_permission(self, request, view, obj):
-        print(f"Request method: {request.method}, User: {request.user}, Author: {obj.author}")
+        print(f"Request method: {request.method}, "
+              f"User: {request.user}, Author: {obj.author}")
 
         if request.method in permissions.SAFE_METHODS:
             return True
