@@ -22,7 +22,7 @@ def send_confirmation_email(user: User, email: str) -> None:
         f'Ваш код подтверждения: {user.confirmation_code}\n\n'
         f'Если вы не отправляли этот запрос, '
         f'просто проигнорируйте это сообщение.'
-)
+    )
     send_mail(
         subject='Код подтверждения',
         message=confirmation_message,

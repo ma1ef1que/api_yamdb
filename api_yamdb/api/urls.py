@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter
 from users.views import SignUpView, TokenObtainView, UserViewSet
 from .views import (
     CategoryViewSet,
+    CommentViewSet,
     GenreViewSet,
     ReviewViewSet,
     TitleViewSet
@@ -18,6 +19,11 @@ router.register(
     r'titles/(?P<title_id>\d+)/reviews',
     ReviewViewSet,
     basename='reviews'
+)
+router.register(
+    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    CommentViewSet,
+    basename='comments'
 )
 
 auth_urls = [
