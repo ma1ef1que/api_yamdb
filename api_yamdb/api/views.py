@@ -22,7 +22,7 @@ ALLOWED_METHODS = ['get', 'post', 'patch', 'delete']
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
-    )
+    ).order_by('name')
     filter_backends = (DjangoFilterBackend, )
     permission_classes = [IsAdminOrReadOnly, ]
     filterset_class = TitlesFilter

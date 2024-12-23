@@ -26,8 +26,8 @@ class AuthorOrReadOnly(permissions.BasePermission):
             return True
 
         return (
-                obj.author == request.user
-                or request.user.is_staff
-                or getattr(request.user, 'is_admin', False)
-                or getattr(request.user, 'is_moderator', False)
+            obj.author == request.user
+            or request.user.is_staff
+            or getattr(request.user, 'is_admin', False)
+            or getattr(request.user, 'is_moderator', False)
         )
