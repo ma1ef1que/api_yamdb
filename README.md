@@ -30,11 +30,16 @@ pip install -r requirements.txt
 ```
 python3 manage.py migrate
 ```
-4. Запустить проект:
+4. Загрузить тестовые данные:
+```
+python manage.py import_csv
+```
+5. Запустить проект:
 ```
 python3 manage.py runserver
 ```
 После запуска сервера по адресу http://127.0.0.1:8000/redoc/ будет доступна документация проекта с примерами запросов
+
 
 ## Технологии
  * Python 3.11
