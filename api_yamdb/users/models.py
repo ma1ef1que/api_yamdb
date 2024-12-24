@@ -38,13 +38,11 @@ class User(AbstractUser):
     first_name = models.CharField(
         'Имя',
         max_length=150,
-        null=True,
         blank=True
     )
     last_name = models.CharField(
         'Фамилия',
         max_length=150,
-        null=True,
         blank=True
     )
     bio = models.TextField('Расскажите о себе', blank=True)
