@@ -44,12 +44,20 @@ class SignUpSerializer(serializers.ModelSerializer):
         email = data.get('email')
         if User.objects.filter(username=username, email=email).exists():
             return data
+        elif (User.objects.filter(email=email).exists()
+                and User.objects.filter(username=username).exists()):
+            raise serializers.ValidationError(
+                {
+                    'username': 'Пользователь с таким именем уже зарегистрирован.',
+                    'email': 'Такой e-mail уже зарегистрирован.'
+                }
+            )
         elif User.objects.filter(username=username).exists():
             raise ValidationError(
-                'Пользователь с таким именем уже зарегистрирован.'
+                {'username': 'Пользователь с таким именем уже зарегистрирован.'}
             )
         elif User.objects.filter(email=email).exists():
             raise ValidationError(
-                'Такой e-mail уже зарегистрирован.'
+                {'email': 'Такой e-mail уже зарегистрирован.'}
             )
         return data
