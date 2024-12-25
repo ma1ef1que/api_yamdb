@@ -6,15 +6,10 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from api.filters import TitlesFilter
 from reviews.models import Category, Comment, Genre, Review, Title
-from .permissions import IsAdminOrReadOnly, AuthorOrReadOnly
-from .serializers import (
-    CategorySerializer,
-    CommentSerializer,
-    GenreSerializer,
-    ReviewSerializer,
-    TitleGETSerializer,
-    TitleSerializer
-)
+from .permissions import AuthorOrReadOnly, IsAdminOrReadOnly
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, ReviewSerializer,
+                          TitleGETSerializer, TitleSerializer)
 
 ALLOWED_METHODS = ['get', 'post', 'patch', 'delete']
 

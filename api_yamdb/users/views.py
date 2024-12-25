@@ -1,21 +1,17 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from rest_framework import status, filters
-from rest_framework.response import Response
+from rest_framework import filters, status
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from .services import generate_confirmation_code, send_confirmation_email
 from .permissions import IsAdmin
-from .serializers import (
-    SignUpSerializer,
-    UserSerializer,
-    ConformationCodeSerializer,
-)
-
+from .serializers import (ConformationCodeSerializer, SignUpSerializer,
+                          UserSerializer)
+from .services import generate_confirmation_code, send_confirmation_email
 
 User = get_user_model()
 

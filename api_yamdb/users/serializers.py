@@ -2,9 +2,7 @@ from django.contrib.auth import get_user_model
 from django.forms import ValidationError
 from rest_framework import serializers
 
-
 from .validators import validate_username
-
 
 User = get_user_model()
 
