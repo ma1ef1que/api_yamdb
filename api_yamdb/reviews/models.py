@@ -5,14 +5,23 @@ from django.core.validators import (MaxLengthValidator, MaxValueValidator,
                                     MinValueValidator, RegexValidator)
 from django.db import models
 
+from api_yamdb.settings import (
+    NAME_LENGTH,
+    SLUG_LENGTH,
+    MIN_VALIDATOR,
+    STR_TEXT_LENGTH,
+    MAX_VALIDATOR
+)
+
+
 User = get_user_model()
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=NAME_LENGTH)
     slug = models.SlugField(
         unique=True,
-        max_length=50,
+        max_length=SLUG_LENGTH,
         validators=[RegexValidator(
             regex=r'^[-a-zA-Z0-9_]+$',
             message='Слаг категории содержит недопустимый символ'
@@ -30,10 +39,10 @@ class Genre(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=NAME_LENGTH)
     slug = models.SlugField(
         unique=True,
-        max_length=50,
+        max_length=SLUG_LENGTH,
         validators=[
             RegexValidator(
                 regex=r'^[-a-zA-Z0-9_]+$',
@@ -55,14 +64,14 @@ class Category(models.Model):
 class Title(models.Model):
     name = models.CharField(
         'Название произведения',
-        max_length=256,
-        validators=[MaxLengthValidator(256)]
+        max_length=NAME_LENGTH,
+        validators=[MaxLengthValidator(NAME_LENGTH)]
     )
     year = models.PositiveIntegerField(
         verbose_name='Год выхода',
         validators=[
             MinValueValidator(
-                0,
+                MIN_VALIDATOR,
                 message='Некорректное значение - год не может быть до н.э.'
             ),
             MaxValueValidator(
@@ -124,8 +133,8 @@ class Review(models.Model):
     score = models.PositiveIntegerField(
         'Оценка',
         validators=[
-            MinValueValidator(0),
-            MaxValueValidator(10),
+            MinValueValidator(MIN_VALIDATOR),
+            MaxValueValidator(MAX_VALIDATOR),
         ]
     )
     author = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -145,7 +154,7 @@ class Review(models.Model):
     def __str__(self):
         return (
             f"Review: {self.title} - Score: {self.score} - "
-            f"Author: {self.author} - Text: {self.text[:20]}"
+            f"Author: {self.author} - Text: {self.text[:STR_TEXT_LENGTH]}"
         )
 
 
@@ -164,5 +173,5 @@ class Comment(models.Model):
     def __str__(self):
         return (
             f"Comment by {self.author} on Review "
-            f"{self.review}: {self.text[:20]}..."
+            f"{self.review}: {self.text[:STR_TEXT_LENGTH]}..."
         )

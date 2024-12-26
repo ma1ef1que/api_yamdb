@@ -1,20 +1,36 @@
+from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, viewsets
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework import filters, mixins, viewsets, status
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import (
+    IsAuthenticatedOrReadOnly,
+    AllowAny,
+    IsAuthenticated)
 
 from api.filters import TitlesFilter
-from reviews.models import Category, Comment, Genre, Review, Title
-from .permissions import IsAdminOrReadOnly, AuthorOrReadOnly
+from reviews.models import Category, Genre, Review, Title
+from .permissions import IsAdminOrReadOnly, AuthorOrReadOnly, IsAdmin
 from .serializers import (
     CategorySerializer,
     CommentSerializer,
     GenreSerializer,
     ReviewSerializer,
     TitleGETSerializer,
-    TitleSerializer
+    TitleSerializer,
+    SignUpSerializer,
+    UserSerializer,
+    ConformationCodeSerializer,
 )
+
+
+User = get_user_model()
+
 
 ALLOWED_METHODS = ['get', 'post', 'patch', 'delete']
 
@@ -66,16 +82,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, AuthorOrReadOnly]
     http_method_names = ALLOWED_METHODS
 
     def get_review(self):
         return get_object_or_404(
-            Review.objects.filter(
-                title_id=self.kwargs['title_id']
-            ),
+            Review.objects,
+            title_id=self.kwargs['title_id'],
             pk=self.kwargs['review_id']
         )
 
@@ -98,3 +112,64 @@ class CategoryViewSet(
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
+
+
+class UserViewSet(ModelViewSet):
+    """
+    Представление пользователей сайта.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    http_method_names = ALLOWED_METHODS
+    permission_classes = (IsAdmin,)
+    filter_backends = (filters.SearchFilter,)
+    lookup_field = 'username'
+    search_fields = ('username',)
+
+    @action(
+        methods=['GET', 'PATCH'],
+        detail=False,
+        url_path='me',
+        permission_classes=(IsAuthenticated,),
+    )
+    def get_me(self, request):
+        user = request.user
+        if request.method == 'GET':
+            return Response(
+                UserSerializer(user).data, status=status.HTTP_200_OK)
+
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(role=user.role)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class SignUpView(APIView):
+    """
+    Регистрация пользователя и отправка кода подтверждения.
+    """
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        serializer = SignUpSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TokenObtainView(APIView):
+    """
+    Получение JWT токена с использованием username и confirmation_code.
+    """
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        serializer = ConformationCodeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.validated_data['user']
+        user.is_active = True
+        user.save()
+
+        token = str(RefreshToken.for_user(user).access_token)
+        return Response({'token': token}, status=status.HTTP_200_OK)
