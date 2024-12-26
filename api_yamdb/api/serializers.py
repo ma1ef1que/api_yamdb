@@ -5,13 +5,14 @@ from django.core.mail import send_mail
 from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.validators import validate_username
 from .services import generate_confirmation_code
 
 
 User = get_user_model()
+
+from api_yamdb.settings import MIN_VALIDATOR, MAX_VALIDATOR
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -38,7 +39,6 @@ class TitleSerializer(serializers.ModelSerializer):
         slug_field='slug',
         queryset=Category.objects.all()
     )
-    rating = serializers.FloatField(read_only=True)
 
     class Meta:
         model = Title
@@ -46,7 +46,6 @@ class TitleSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'year',
-            'rating',
             'description',
             'genre',
             'category'
@@ -72,7 +71,6 @@ class TitleGETSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
@@ -80,24 +78,22 @@ class ReviewSerializer(serializers.ModelSerializer):
     )
     score = serializers.IntegerField(
         validators=[
-            MinValueValidator(limit_value=0),
-            MaxValueValidator(limit_value=10)
+            MinValueValidator(limit_value=MIN_VALIDATOR),
+            MaxValueValidator(limit_value=MAX_VALIDATOR)
         ]
     )
+    title = serializers.PrimaryKeyRelatedField(queryset=Title.objects.all(), required=False)
 
     class Meta:
         model = Review
-        exclude = ('title',)
+        fields = '__all__'
 
     def validate(self, data):
         request = self.context['request']
-        title = self.context['view'].get_title()
         author = request.user
+        title = self.context['view'].get_title()
 
-        if self.instance is None and Review.objects.filter(
-                title=title,
-                author=author
-        ).exists():
+        if self.instance is None and title.reviews.filter(author=author).exists():
             raise ValidationError('Вы уже оставили отзыв на это произведение.')
 
         return data

@@ -9,6 +9,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+NAME_LENGTH = 256
+
+SLUG_LENGTH = 50
+
+MIN_VALIDATOR = 0
+
+MAX_VALIDATOR = 10
+
+STR_TEXT_LENGTH = 20
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

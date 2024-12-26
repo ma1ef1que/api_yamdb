@@ -82,16 +82,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, AuthorOrReadOnly]
     http_method_names = ALLOWED_METHODS
 
     def get_review(self):
         return get_object_or_404(
-            Review.objects.filter(
-                title_id=self.kwargs['title_id']
-            ),
+            Review.objects,
+            title_id=self.kwargs['title_id'],
             pk=self.kwargs['review_id']
         )
 
