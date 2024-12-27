@@ -14,7 +14,7 @@ from rest_framework.permissions import (
     IsAuthenticated)
 
 from api.filters import TitlesFilter
-from reviews.models import Category, Comment, Genre, Review, Title
+from reviews.models import Category, Genre, Review, Title
 from .permissions import IsAdminOrReadOnly, AuthorOrReadOnly, IsAdmin
 from .serializers import (
     CategorySerializer,
@@ -120,7 +120,7 @@ class UserViewSet(ModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    http_method_names = ALLOWED_METHODS
     permission_classes = (IsAdmin,)
     filter_backends = (filters.SearchFilter,)
     lookup_field = 'username'

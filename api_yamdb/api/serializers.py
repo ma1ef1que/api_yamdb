@@ -8,11 +8,10 @@ from rest_framework.exceptions import ValidationError
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.validators import validate_username
 from .services import generate_confirmation_code
+from api_yamdb.settings import MIN_VALIDATOR, MAX_VALIDATOR
 
 
 User = get_user_model()
-
-from api_yamdb.settings import MIN_VALIDATOR, MAX_VALIDATOR
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -82,7 +81,9 @@ class ReviewSerializer(serializers.ModelSerializer):
             MaxValueValidator(limit_value=MAX_VALIDATOR)
         ]
     )
-    title = serializers.PrimaryKeyRelatedField(queryset=Title.objects.all(), required=False)
+    title = serializers.PrimaryKeyRelatedField(
+        queryset=Title.objects.all(), required=False
+    )
 
     class Meta:
         model = Review
@@ -93,7 +94,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         author = request.user
         title = self.context['view'].get_title()
 
-        if self.instance is None and title.reviews.filter(author=author).exists():
+        if (self.instance is None
+                and title.reviews.filter(author=author).exists()):
             raise ValidationError('Вы уже оставили отзыв на это произведение.')
 
         return data
