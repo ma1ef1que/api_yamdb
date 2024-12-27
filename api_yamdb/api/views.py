@@ -80,6 +80,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def get_title(self):
         return get_object_or_404(Title, pk=self.kwargs['title_id'])
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['title'] = self.get_title()
+        return context
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
