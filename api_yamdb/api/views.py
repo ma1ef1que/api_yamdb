@@ -115,9 +115,9 @@ class CategoryViewSet(
 
 
 class UserViewSet(ModelViewSet):
-    """
+    '''
     Представление пользователей сайта.
-    """
+    '''
     queryset = User.objects.all()
     serializer_class = UserSerializer
     http_method_names = ALLOWED_METHODS
@@ -145,9 +145,9 @@ class UserViewSet(ModelViewSet):
 
 
 class SignUpView(APIView):
-    """
+    '''
     Регистрация пользователя и отправка кода подтверждения.
-    """
+    '''
     permission_classes = (AllowAny,)
 
     def post(self, request):
@@ -158,9 +158,9 @@ class SignUpView(APIView):
 
 
 class TokenObtainView(APIView):
-    """
+    '''
     Получение JWT токена с использованием username и confirmation_code.
-    """
+    '''
     permission_classes = (AllowAny,)
 
     def post(self, request):
