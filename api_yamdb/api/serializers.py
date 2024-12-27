@@ -92,7 +92,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         request = self.context['request']
         author = request.user
-        title = self.context['view'].get_title()
+        title = self.context['title']
 
         if (self.instance is None
                 and title.reviews.filter(author=author).exists()):
