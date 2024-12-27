@@ -1,13 +1,15 @@
 from django.contrib.auth import get_user_model
 from django.http import Http404
+from django.core.cache import cache
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.validators import validate_username
-from .services import generate_confirmation_code
+from .utils import generate_confirmation_code
 from api_yamdb.settings import MIN_VALIDATOR, MAX_VALIDATOR
 
 
@@ -141,16 +143,27 @@ class ConformationCodeSerializer(serializers.Serializer):
                 {'username': 'Пользователь с таким именем не найден.'}
             )
 
-        if user.confirmation_code != confirmation_code:
+        cached_code = cache.get(f'confirmation_code_{username}')
+        if not cached_code or cached_code != confirmation_code:
             raise serializers.ValidationError(
-                {'confirmation_code': 'Неверный код подтверждения.'}
+                {
+                    'confirmation_code': (
+                        'Неверный или истёкший код подтверждения.'
+                    )
+                }
             )
 
         data['user'] = user
         return data
 
+    def save(self):
+        user = self.validated_data['user']
+        user.is_active = True
+        user.save()
+        return user
 
-class SignUpSerializer(serializers.ModelSerializer):
+
+class SignUpSerializer(serializers.Serializer):
     username = serializers.CharField(
         max_length=150,
         required=True,
