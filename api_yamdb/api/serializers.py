@@ -9,8 +9,13 @@ from rest_framework.exceptions import ValidationError
 
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.validators import validate_username
-from .utils import generate_confirmation_code
-from api_yamdb.settings import MIN_VALIDATOR, MAX_VALIDATOR
+from api_yamdb.settings import (
+    MIN_SCORE_VALIDATOR,
+    MAX_SCORE_VALIDATOR,
+    USER_INFO_MAX_LENGTH
+)
+
+from .services import generate_confirmation_code
 
 
 User = get_user_model()
@@ -79,8 +84,8 @@ class ReviewSerializer(serializers.ModelSerializer):
     )
     score = serializers.IntegerField(
         validators=[
-            MinValueValidator(limit_value=MIN_VALIDATOR),
-            MaxValueValidator(limit_value=MAX_VALIDATOR)
+            MinValueValidator(limit_value=MIN_SCORE_VALIDATOR),
+            MaxValueValidator(limit_value=MAX_SCORE_VALIDATOR)
         ]
     )
     title = serializers.PrimaryKeyRelatedField(
@@ -126,7 +131,10 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ConformationCodeSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150, required=True)
+    username = serializers.CharField(
+        max_length=USER_INFO_MAX_LENGTH,
+        required=True
+    )
     confirmation_code = serializers.CharField(required=True)
 
     class Meta:
@@ -165,11 +173,14 @@ class ConformationCodeSerializer(serializers.Serializer):
 
 class SignUpSerializer(serializers.Serializer):
     username = serializers.CharField(
-        max_length=150,
+        max_length=USER_INFO_MAX_LENGTH,
         required=True,
         validators=[validate_username]
     )
-    email = serializers.EmailField(max_length=254, required=True,)
+    email = serializers.EmailField(
+        max_length=USER_INFO_MAX_LENGTH,
+        required=True,
+    )
 
     class Meta:
         model = User

@@ -2,6 +2,8 @@ from rest_framework import permissions
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
+    """Для аутентифицированных пользователей имеющих статус администратора или
+    персонала иначе только просмотр."""
 
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
@@ -15,7 +17,12 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 
 
 class AuthorOrReadOnly(permissions.BasePermission):
-
+    """
+    Анонимному пользователю разрешены только безопасные запросы.
+    Доступ к запросам PATCH и DELETE предоставляется только
+    суперпользователю , админу, аутентифицированным пользователям
+    с ролью admin или moderator, а также автору объекта.
+    """
     message = 'Изменение чужого контента запрещено!'
 
     def has_object_permission(self, request, view, obj):
