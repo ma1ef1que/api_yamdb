@@ -14,8 +14,7 @@ from api_yamdb.settings import (
     MAX_SCORE_VALIDATOR,
     USER_INFO_MAX_LENGTH
 )
-
-from .services import generate_confirmation_code
+from .utils import generate_confirmation_code
 
 
 User = get_user_model()
