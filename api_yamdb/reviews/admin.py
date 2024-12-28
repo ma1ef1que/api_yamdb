@@ -30,7 +30,7 @@ class GenreAdmin(admin.ModelAdmin):
 
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
-    """Класс настройки раздела произведений."""
+    '''Класс настройки раздела произведений.'''
 
     list_display = (
         'id',

@@ -8,9 +8,10 @@ from django.db import models
 from api_yamdb.settings import (
     NAME_LENGTH,
     SLUG_LENGTH,
-    MIN_VALIDATOR,
+    MIN_SCORE_VALIDATOR,
     STR_TEXT_LENGTH,
-    MAX_VALIDATOR
+    MAX_SCORE_VALIDATOR,
+    MIN_YEAR_VALIDATOR
 )
 
 
@@ -71,7 +72,7 @@ class Title(models.Model):
         verbose_name='Год выхода',
         validators=[
             MinValueValidator(
-                MIN_VALIDATOR,
+                MIN_YEAR_VALIDATOR,
                 message='Некорректное значение - год не может быть до н.э.'
             ),
             MaxValueValidator(
@@ -133,8 +134,8 @@ class Review(models.Model):
     score = models.PositiveIntegerField(
         'Оценка',
         validators=[
-            MinValueValidator(MIN_VALIDATOR),
-            MaxValueValidator(MAX_VALIDATOR),
+            MinValueValidator(MIN_SCORE_VALIDATOR),
+            MaxValueValidator(MAX_SCORE_VALIDATOR),
         ]
     )
     author = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -153,8 +154,8 @@ class Review(models.Model):
 
     def __str__(self):
         return (
-            f"Review: {self.title} - Score: {self.score} - "
-            f"Author: {self.author} - Text: {self.text[:STR_TEXT_LENGTH]}"
+            f'Review: {self.title} - Score: {self.score} - '
+            f'Author: {self.author} - Text: {self.text[:STR_TEXT_LENGTH]}'
         )
 
 
@@ -172,6 +173,6 @@ class Comment(models.Model):
 
     def __str__(self):
         return (
-            f"Comment by {self.author} on Review "
-            f"{self.review}: {self.text[:STR_TEXT_LENGTH]}..."
+            f'Comment by {self.author} on Review '
+            f'{self.review}: {self.text[:STR_TEXT_LENGTH]}...'
         )

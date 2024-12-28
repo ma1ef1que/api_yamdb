@@ -10,6 +10,7 @@ from .views import (
     TitleViewSet
 )
 
+
 router = DefaultRouter()
 router.register('users', UserViewSet, basename='users')
 router.register('titles', TitleViewSet, basename='titles')
