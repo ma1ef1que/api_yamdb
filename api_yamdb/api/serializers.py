@@ -1,9 +1,9 @@
 from django.contrib.auth import get_user_model
-from django.http import Http404
-from django.core.cache import cache
+from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.validators import MaxValueValidator, MinValueValidator
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -129,7 +129,7 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
 
-class ConformationCodeSerializer(serializers.Serializer):
+class ConfirmationCodeSerializer(serializers.Serializer):
     username = serializers.CharField(
         max_length=USER_INFO_MAX_LENGTH,
         required=True
@@ -143,31 +143,23 @@ class ConformationCodeSerializer(serializers.Serializer):
     def validate(self, data):
         username = data.get('username')
         confirmation_code = data.get('confirmation_code')
+        user = get_object_or_404(User, username=username)
 
-        user = User.objects.filter(username=username).first()
-        if not user:
-            raise Http404(
-                {'username': 'Пользователь с таким именем не найден.'}
-            )
-
-        cached_code = cache.get(f'confirmation_code_{username}')
-        if not cached_code or cached_code != confirmation_code:
+        if user.confirmation_code != confirmation_code:
             raise serializers.ValidationError(
-                {
-                    'confirmation_code': (
-                        'Неверный или истёкший код подтверждения.'
-                    )
-                }
+                {'confirmation_code': 'Неверный код подтверждения!'}
             )
 
-        data['user'] = user
         return data
 
     def save(self):
-        user = self.validated_data['user']
+        username = self.validated_data['username']
+        user = get_object_or_404(User, username=username)
         user.is_active = True
         user.save()
-        return user
+
+        token = str(RefreshToken.for_user(user).access_token)
+        return {'token': token}
 
 
 class SignUpSerializer(serializers.Serializer):
