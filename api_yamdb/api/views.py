@@ -7,7 +7,6 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly,
     AllowAny,
@@ -15,7 +14,7 @@ from rest_framework.permissions import (
 
 from api.filters import TitlesFilter
 from reviews.models import Category, Genre, Review, Title
-from .permissions import IsAdminOrReadOnly, AuthorOrReadOnly, IsAdmin
+from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly, IsAdmin
 from .serializers import (
     CategorySerializer,
     CommentSerializer,
@@ -25,7 +24,7 @@ from .serializers import (
     TitleSerializer,
     SignUpSerializer,
     UserSerializer,
-    ConformationCodeSerializer,
+    ConfirmationCodeSerializer,
 )
 
 
@@ -66,7 +65,7 @@ class GenreViewSet(
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly, AuthorOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
     http_method_names = ALLOWED_METHODS
 
     def get_queryset(self):
@@ -88,7 +87,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly, AuthorOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
     http_method_names = ALLOWED_METHODS
 
     def get_review(self):
@@ -169,10 +168,9 @@ class TokenObtainView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
-        serializer = ConformationCodeSerializer(data=request.data)
+        serializer = ConfirmationCodeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        user = serializer.save()
-
-        token = str(RefreshToken.for_user(user).access_token)
+        result = serializer.save()
+        token = result.get('token')
         return Response({'token': token}, status=status.HTTP_200_OK)
